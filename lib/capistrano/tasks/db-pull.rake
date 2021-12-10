@@ -41,9 +41,12 @@ namespace :db do
           cat #{fetch(:application)}.sql | sqlite3 db/development.sqlite3"
     elsif remote.mysql? && local.sqlite3?
       system "gunzip -c #{fetch(:application)}.sql.gz |
-          sed 's/\\`//g' |
-          sed \"s/\\\\\\\'/\'\'/g\" |
-          sed 's/\\\"/\"/g' > #{fetch(:application)}.sql"
+          sed 's/\\'/''/g' |
+          sed 's/\\"/"/g' |
+          sed 's/\\r\\n/\r\n/g' |
+          sed 's/\\\\/\\/g' |
+          sed 's/ auto_increment//g' |
+          sed 's/^[UN]*?LOCK TABLES.*//g' > #{fetch(:application)}.sql"
       system "bin/rake db:drop && bin/rake db:schema:load &&
           cat #{fetch(:application)}.sql | sqlite3 db/development.sqlite3"
     elsif remote.mysql? && local.mysql?
